@@ -1,7 +1,7 @@
 """CLI interface for uv-dockerizer."""
 
 from pathlib import Path
-from typing import Annotated, Optional
+from typing import Annotated
 
 import typer
 from rich.console import Console
@@ -25,10 +25,11 @@ def version_callback(value: bool) -> None:
         raise typer.Exit()
 
 
-@app.callback()
+@app.callback(invoke_without_command=True)
 def main(
+    ctx: typer.Context,
     version: Annotated[
-        Optional[bool],
+        bool | None,
         typer.Option(
             "--version",
             "-V",
@@ -39,7 +40,8 @@ def main(
     ] = None,
 ) -> None:
     """🐳 uv-dockerizer: Automatically generate optimized Docker configurations for uv-based Python projects."""
-    pass
+    if ctx.invoked_subcommand is None:
+        console.print(ctx.get_help())
 
 
 @app.command()
@@ -79,14 +81,14 @@ def init(
         ),
     ] = False,
     ci: Annotated[
-        Optional[str],
+        str | None,
         typer.Option(
             "--ci",
             help="Generate CI/CD configuration (github, gitlab, none).",
         ),
     ] = None,
     iac: Annotated[
-        Optional[str],
+        str | None,
         typer.Option(
             "--iac",
             help="Generate Infrastructure as Code templates (terraform, pulumi, none).",
@@ -137,19 +139,19 @@ def init(
     output_path = output / "Dockerfile"
     if output_path.exists() and not force:
         console.print(
-            f"\n[yellow]⚠[/yellow] Dockerfile already exists. Use [bold]--force[/bold] to overwrite."
+            "\n[yellow]⚠[/yellow] Dockerfile already exists. Use [bold]--force[/bold] to overwrite."
         )
         raise typer.Exit(1)
 
     output_path.write_text(dockerfile_content)
-    console.print(f"\n[green]✓[/green] Generated [bold]Dockerfile[/bold]")
+    console.print("\n[green]✓[/green] Generated [bold]Dockerfile[/bold]")
 
     # Generate .dockerignore
     dockerignore_path = output / ".dockerignore"
     if not dockerignore_path.exists() or force:
         dockerignore_content = generator.generate_dockerignore()
         dockerignore_path.write_text(dockerignore_content)
-        console.print(f"[green]✓[/green] Generated [bold].dockerignore[/bold]")
+        console.print("[green]✓[/green] Generated [bold].dockerignore[/bold]")
 
     # Generate Docker Compose if requested
     if compose:
@@ -160,7 +162,7 @@ def init(
         compose_path = output / "docker-compose.yml"
         if not compose_path.exists() or force:
             compose_path.write_text(compose_content)
-            console.print(f"[green]✓[/green] Generated [bold]docker-compose.yml[/bold]")
+            console.print("[green]✓[/green] Generated [bold]docker-compose.yml[/bold]")
 
     # Generate CI/CD if requested
     if ci:
@@ -232,12 +234,12 @@ def analyze(
             console.print(f"  ... and {len(project_info.dependencies) - 10} more")
 
     if project_info.frameworks:
-        console.print(f"\n[bold]Detected Frameworks:[/bold]")
+        console.print("\n[bold]Detected Frameworks:[/bold]")
         for framework in project_info.frameworks:
             console.print(f"  • {framework}")
 
     # Show recommended optimizations
-    console.print(f"\n[bold]Recommended Optimizations:[/bold]")
+    console.print("\n[bold]Recommended Optimizations:[/bold]")
     for opt in project_info.recommended_optimizations:
         console.print(f"  [green]✓[/green] {opt}")
 
@@ -290,10 +292,10 @@ def build(
     if result.returncode == 0:
         console.print(f"\n[green]✓[/green] Successfully built [bold]{image_name}[/bold]")
         if push:
-            console.print(f"[bold]Pushing image...[/bold]")
+            console.print("[bold]Pushing image...[/bold]")
             subprocess.run(["docker", "push", image_name])
     else:
-        console.print(f"\n[red]✗[/red] Build failed")
+        console.print("\n[red]✗[/red] Build failed")
         raise typer.Exit(1)
 
 
