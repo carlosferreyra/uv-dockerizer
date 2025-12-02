@@ -1,0 +1,76 @@
+[project]
+name = "uv-dockerizer"
+version = "0.1.0"
+description = "A CLI tool to automatically generate optimized Dockerfiles, Docker Compose, and IaC templates for uv-based Python projects"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "Carlos Eduardo Ferreyra", email = "eduferreyraok@gmail.com" }
+]
+requires-python = ">=3.12"
+keywords = ["docker", "dockerfile", "uv", "container", "devops", "cli", "terraform", "pulumi"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: System :: Software Distribution",
+]
+dependencies = [
+    "typer>=0.12.0",
+    "rich>=13.0.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "jinja2>=3.1.0",
+    "tomli>=2.0.0;python_version<'3.11'",
+    "pyyaml>=6.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.0.0",
+    "ruff>=0.4.0",
+    "mypy>=1.10.0",
+    "pre-commit>=3.7.0",
+]
+
+[project.scripts]
+uv-dockerizer = "uv_dockerizer.cli:app"
+dockerize = "uv_dockerizer.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/carlosferreyra/uv-dockerizer"
+Documentation = "https://github.com/carlosferreyra/uv-dockerizer#readme"
+Repository = "https://github.com/carlosferreyra/uv-dockerizer.git"
+Issues = "https://github.com/carlosferreyra/uv-dockerizer/issues"
+
+[build-system]
+requires = ["uv_build>=0.9.13,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "D", "UP", "ANN", "B", "C4", "SIM"]
+ignore = ["D100", "D104", "ANN101", "ANN102"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_ignores = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --cov=uv_dockerizer --cov-report=term-missing"
